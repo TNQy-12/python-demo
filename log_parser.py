@@ -29,6 +29,6 @@ def parse_log_line(line):
     return None
 
 def read_log_file(file_path):
-    # Đọc file log và phân tích từng dòng
-    with open(file_path, 'r') as file:
+    # Đọc file log và phân tích từng dòng, sử dụng mã hóa UTF-8
+    with open(file_path, 'r', encoding='utf-8') as file:
         return [parse_log_line(line) for line in file.readlines() if parse_log_line(line)]

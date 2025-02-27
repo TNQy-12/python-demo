@@ -5,16 +5,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Log Analysis Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --accent-color: #e74c3c;
-            --background-color: #ecf0f1;
+            --primary-color: #1e3a8a;
+            /* Xanh đậm */
+            --secondary-color: #3b82f6;
+            /* Xanh nhạt */
+            --accent-color: #ef4444;
+            /* Đỏ */
+            --success-color: #22c55e;
+            /* Xanh lá */
+            --warning-color: #f59e0b;
+            /* Vàng */
+            --background-color: #f4f6f9;
+            /* Nền sáng */
             --card-color: #ffffff;
-            --text-color: #333333;
-            --border-radius: 8px;
-            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+            /* Trắng */
+            --text-color: #1f2a44;
+            /* Xám đậm */
+            --text-secondary: #6b7280;
+            /* Xám nhạt */
+            --border-radius: 12px;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
         * {
@@ -24,174 +37,494 @@
         }
 
         body {
-            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
             background-color: var(--background-color);
             color: var(--text-color);
             line-height: 1.6;
-            padding: 20px;
+            min-height: 100vh;
         }
 
-        .dashboard-container {
-            max-width: 1000px;
-            margin: 0 auto;
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            width: 260px;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar-logo {
+            font-size: 26px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .sidebar-logo i {
+            color: var(--accent-color);
+        }
+
+        .sidebar-subtitle {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+
+        .menu {
+            list-style: none;
+            margin-top: 20px;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background 0.2s ease;
+        }
+
+        .menu-link:hover,
+        .menu-link.active {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .menu-link i {
+            width: 20px;
+            margin-right: 10px;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 25px;
         }
 
         .dashboard-header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 20px;
-            border-radius: var(--border-radius) var(--border-radius) 0 0;
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
+            background: var(--card-color);
+            padding: 15px 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 25px;
         }
 
         .dashboard-title {
             font-size: 24px;
             font-weight: 600;
-            margin: 0;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .dashboard-subtitle {
+        .search-container {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border: 1px solid #d1d5db;
+            border-radius: 25px;
             font-size: 14px;
-            opacity: 0.8;
-            margin-top: 5px;
+            transition: border-color 0.2s ease;
         }
 
-        .dashboard-content {
-            background-color: var(--card-color);
-            border-radius: 0 0 var(--border-radius) var(--border-radius);
+        .search-input:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+            box-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: var(--card-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--box-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card-title {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .stat-card-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .stat-card-info {
+            font-size: 13px;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stat-card-info.up {
+            color: var(--success-color);
+        }
+
+        .stat-card-info.down {
+            color: var(--accent-color);
+        }
+
+        .alerts-container {
+            background: var(--card-color);
+            border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
             overflow: hidden;
         }
 
-        .section {
-            padding: 20px;
+        .alerts-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .alerts-title {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dashboard-btn {
+            padding: 8px 15px;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .dashboard-btn:hover {
+            background: #2563eb;
         }
 
         .alerts-table {
             width: 100%;
             border-collapse: collapse;
-            border-radius: var(--border-radius);
-            overflow: hidden;
         }
 
         .alerts-table th {
-            background-color: var(--secondary-color);
-            color: white;
-            padding: 12px 15px;
+            background: #f8fafc;
+            color: var(--primary-color);
+            padding: 12px;
             text-align: left;
             font-weight: 600;
         }
 
         .alerts-table td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .alerts-table tr:last-child td {
-            border-bottom: none;
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
         }
 
         .alerts-table tr:hover {
-            background-color: rgba(52, 152, 219, 0.05);
+            background: #f1f5f9;
         }
 
-        .alert-index {
-            text-align: center;
-            font-weight: 600;
-            color: var(--secondary-color);
-            width: 60px;
-        }
-
-        .no-alerts {
-            padding: 30px;
-            text-align: center;
-            color: #7f8c8d;
-            font-size: 16px;
-        }
-
-        .no-alerts-icon {
-            font-size: 40px;
-            margin-bottom: 15px;
-            color: #bdc3c7;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
+        .alert-severity {
+            padding: 4px 10px;
+            border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
             color: white;
-            background-color: var(--accent-color);
+            text-align: center;
+            display: inline-block;
+        }
+
+        .critical {
+            background: var(--accent-color);
+        }
+
+        .warning {
+            background: var(--warning-color);
+        }
+
+        .info {
+            background: var(--secondary-color);
+        }
+
+        .alert-time {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .action-btn:hover {
+            color: var(--primary-color);
+        }
+
+        .no-alerts {
+            padding: 40px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .no-alerts-icon {
+            font-size: 48px;
+            color: var(--success-color);
+            margin-bottom: 15px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 20px;
+        }
+
+        .page-btn {
+            width: 35px;
+            height: 35px;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .page-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .page-btn:hover:not(.active) {
+            background: #e5e7eb;
         }
 
         .dashboard-footer {
-            margin-top: 20px;
             text-align: center;
-            font-size: 12px;
-            color: #7f8c8d;
+            padding: 20px 0;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-260px);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .toggle-sidebar {
+                display: block;
+            }
         }
 
         @media (max-width: 768px) {
-            .dashboard-header {
-                flex-direction: column;
-                align-items: flex-start;
+            .stats-grid {
+                grid-template-columns: 1fr;
             }
 
-            .alert-index {
-                width: 40px;
-            }
-
-            .alerts-table th,
-            .alerts-table td {
-                padding: 10px;
+            .alert-time,
+            .alert-actions {
+                display: none;
             }
         }
     </style>
 </head>
 
 <body>
-    <div class="dashboard-container">
-        <div class="dashboard-header">
-            <div>
-                <h1 class="dashboard-title">Hệ Thống Phân Tích Log</h1>
-                <div class="dashboard-subtitle">Báo cáo cảnh báo an ninh mạng</div>
-            </div>
-            <div class="status-badge">REAL-TIME</div>
-        </div>
-        <div class="dashboard-content">
-            <div class="section">
-                {% if alerts[0] != "Không phát hiện tấn công nào." %}
-                <table class="alerts-table">
-                    <thead>
-                        <tr>
-                            <th>STT</th>
-                            <th>Cảnh báo tấn công</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for alert in alerts %}
-                        <tr>
-                            <td class="alert-index">{{ loop.index }}</td>
-                            <td>{{ alert }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <div class="no-alerts">
-                    <div class="no-alerts-icon">✓</div>
-                    <p>{{ alerts[0] }}</p>
+    <div class="dashboard-layout">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-shield-alt"></i> SecureLog
                 </div>
-                {% endif %}
+                <div class="sidebar-subtitle">Giám sát an ninh mạng</div>
             </div>
+            <ul class="menu">
+                <li><a href="#" class="menu-link active"><i class="fas fa-home"></i> Trang chủ</a></li>
+                <li><a href="#" class="menu-link"><i class="fas fa-exclamation-triangle"></i> Cảnh báo</a></li>
+                <li><a href="#" class="menu-link"><i class="fas fa-chart-line"></i> Phân tích</a></li>
+                <li><a href="#" class="menu-link"><i class="fas fa-server"></i> Hệ thống</a></li>
+                <li><a href="#" class="menu-link"><i class="fas fa-file-alt"></i> Báo cáo</a></li>
+                <li><a href="#" class="menu-link"><i class="fas fa-cog"></i> Cài đặt</a></li>
+            </ul>
         </div>
-        <div class="dashboard-footer">
-            © 2025 Hệ Thống Phân Tích Log An Ninh Mạng
+
+        <div class="main-content">
+            <div class="dashboard-header">
+                <button class="toggle-sidebar"><i class="fas fa-bars"></i></button>
+                <h1 class="dashboard-title"><i class="fas fa-shield-alt"></i> Phân Tích Log</h1>
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Tìm kiếm cảnh báo...">
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-title">Tổng số cảnh báo</div>
+                    <div class="stat-card-value">{{ alerts|length if alerts[0] != "Không phát hiện tấn công nào." else 0
+                        }}</div>
+                    <div class="stat-card-info up"><i class="fas fa-arrow-up"></i> 12% so với hôm qua</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-title">Mức độ nghiêm trọng</div>
+                    <div class="stat-card-value">Thấp</div>
+                    <div class="stat-card-info down"><i class="fas fa-arrow-down"></i> 5% so với hôm qua</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-title">Thời gian phản hồi</div>
+                    <div class="stat-card-value">2.3s</div>
+                    <div class="stat-card-info up"><i class="fas fa-arrow-up"></i> Nhanh hơn 0.5s</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-title">Hệ thống hoạt động</div>
+                    <div class="stat-card-value">8/8</div>
+                    <div class="stat-card-info"><i class="fas fa-check-circle"></i> Tất cả tốt</div>
+                </div>
+            </div>
+
+            <div class="alerts-container">
+                <div class="alerts-header">
+                    <div class="alerts-title"><i class="fas fa-exclamation-triangle"></i> Cảnh Báo Tấn Công</div>
+                    <button class="dashboard-btn"><i class="fas fa-download"></i> Xuất Báo Cáo</button>
+                </div>
+                <div class="alerts-content">
+                    {% if alerts[0] != "Không phát hiện tấn công nào." %}
+                    <table class="alerts-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Mức độ</th>
+                                <th>Cảnh báo</th>
+                                <th>Thời gian</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for alert in alerts %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>
+                                    {% if 'Nghiêm trọng' in alert or 'Data Exfiltration' in alert %}
+                                    <span class="alert-severity critical">Nghiêm trọng</span>
+                                    {% elif 'Slow Rate' in alert or 'Command' in alert %}
+                                    <span class="alert-severity warning">Cảnh báo</span>
+                                    {% else %}
+                                    <span class="alert-severity info">Thông tin</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ alert }}</td>
+                                <td class="alert-time">{{ "Hôm nay, " ~ "%02d"|format(loop.index + 8) ~ ":" ~
+                                    "%02d"|format((loop.index * 7) % 60) }}</td>
+                                <td class="alert-actions">
+                                    <button class="action-btn"><i class="fas fa-eye"></i></button>
+                                    <button class="action-btn"><i class="fas fa-check"></i></button>
+                                    <button class="action-btn"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="pagination">
+                        <button class="page-btn"><i class="fas fa-angle-left"></i></button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">3</button>
+                        <button class="page-btn"><i class="fas fa-angle-right"></i></button>
+                    </div>
+                    {% else %}
+                    <div class="no-alerts">
+                        <div class="no-alerts-icon"><i class="fas fa-check-circle"></i></div>
+                        <p>{{ alerts[0] }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="dashboard-footer">
+                © 2025 SecureLog - Hệ Thống Phân Tích Log An Ninh Mạng | v2.5.0
+            </div>
         </div>
     </div>
+
+    <script>
+        document.querySelector('.toggle-sidebar').addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('open');
+        });
+
+        const searchInput = document.querySelector('.search-input');
+        searchInput.addEventListener('input', (e) => {
+            const value = e.target.value.toLowerCase();
+            document.querySelectorAll('.alerts-table tbody tr').forEach(row => {
+                const text = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                row.style.display = text.includes(value) ? '' : 'none';
+            });
+        });
+
+        document.querySelectorAll('.page-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (!btn.querySelector('i')) {
+                    document.querySelectorAll('.page-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>
